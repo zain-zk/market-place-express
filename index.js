@@ -19,7 +19,7 @@ const allowedOrigins = [
 // Middleware
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: "https://market-place-react.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
