@@ -41,7 +41,7 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   //   console.log("🔌 A user connected");
 
-  socket.on("Send Message", async (data) => {
+  socket.on("sendMessage", async (data) => {
     try {
       const { sender, receiver, text } = data;
       // save to db
@@ -54,7 +54,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("🔌 A user disconnected");
+    // console.log("🔌 A user disconnected");
   });
 });
 
