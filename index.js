@@ -60,7 +60,7 @@ io.on("connection", (socket) => {
 
 // MongoDB Connection
 mongoose
-  .connect(process.env.DATABASE_URL || process.env.MONGO_URL)
+  .connect(process.env.DATABASE_URL || process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
