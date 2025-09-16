@@ -12,8 +12,8 @@ const server = http.createServer(app);
 
 // ✅ Allowed origins (no trailing slash)
 const allowedOrigins = [
-  "http://localhost:5173", // dev
-  "https://market-place-react-82jinj3w3-zain-zks-projects.vercel.app", // production
+  // "http://localhost:5173", // dev
+  "https://market-place-react.vercel.app", // production
 ];
 
 // Middleware
