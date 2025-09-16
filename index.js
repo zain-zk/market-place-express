@@ -12,14 +12,14 @@ const server = http.createServer(app);
 
 // ✅ Allowed origins (no trailing slash)
 const allowedOrigins = [
-  // "http://localhost:5173", // dev
+  "http://localhost:5173", // dev
   "https://market-place-react.vercel.app", // production
 ];
 
 // Middleware
 app.use(
   cors({
-    origin: "https://market-place-react.vercel.app",
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -31,7 +31,7 @@ app.use("/", indexRoutes);
 // ✅ Socket.IO Setup
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: "https://market-place-react.vercel.app",
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -39,7 +39,7 @@ const io = new Server(server, {
 
 // sOCKET.IO EVENTS
 io.on("connection", (socket) => {
-  console.log("🔌 A user connected");
+  //   console.log("🔌 A user connected");
 
   socket.on("Send Message", async (data) => {
     try {
