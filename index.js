@@ -11,53 +11,55 @@ const app = express();
 const server = http.createServer(app);
 
 // Middleware
-app.use(cors({
-  origin: "http://localhost:5173", // React app
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173", // React app
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use("/", indexRoutes);
 
 //Socket.Io Setup
-const io = new Server(server ,{
+const io = new Server(server, {
   cors: {
-    origin:"http://localhost:5173",
-    methods:["GET" , "POST"],
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
   },
 });
 
 // sOCKET.IO EVENTS
-io.on("connection", (socket)=>{
-
-  socket.on("Send Message", async(data)=>{
+io.on("connection", (socket) => {
+  socket.on("Send Message", async (data) => {
     try {
-      const { sender , receiver , text} = data;
+      const { sender, receiver, text } = data;
 
       //save to db
-      const newMessage =await Message.create({sender , text , receiver});
+      const newMessage = await Message.create({ sender, text, receiver });
 
-      //Emit to the reciever in real time 
-      io.emit("recieveMessage" , newMessage);
+      //Emit to the reciever in real time
+      io.emit("recieveMessage", newMessage);
     } catch (error) {
       console.error("Error saving message:", error);
     }
   });
-  socket.on("disconnect", ()=>{});
+  socket.on("disconnect", () => {});
 });
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/market")
-.then(() => console.log("✅ MongoDB Connected"))
-.catch((err) => console.error("❌ MongoDB connection error:", err));
+mongoose
+  .connect(process.env.DATABASE_URL)
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
     message: "Internal Server Error",
-    error: err.message
+    error: err.message,
   });
 });
 
