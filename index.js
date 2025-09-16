@@ -13,7 +13,8 @@ const server = http.createServer(app);
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:5173", // React app
+    // origin: "http://localhost:5173", // React app
+    origin: "https://market-place-react.vercel.app/", // React app
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -25,7 +26,8 @@ app.use("/", indexRoutes);
 //Socket.Io Setup
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    // origin: "http://localhost:5173",
+    origin: "https://market-place-react.vercel.app/",
     methods: ["GET", "POST"],
   },
 });
