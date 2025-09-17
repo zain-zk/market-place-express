@@ -102,7 +102,7 @@ router.delete("/:id", async (req, res) => {
     }
 
     // Delete all bids related to this requirement
-    await Bid.deleteMany({ requirementId: reqId });
+    await Bid.deleteMany({ requirement: reqId });
 
     res.json({
       message: "Requirement and its bids deleted successfully",
