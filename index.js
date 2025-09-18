@@ -31,7 +31,7 @@ app.use("/", indexRoutes);
 // ✅ Socket.IO Setup
 const io = new Server(server, {
   cors: {
-    origin: "https://market-place-react.vercel.app",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
