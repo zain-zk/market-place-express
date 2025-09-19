@@ -90,11 +90,6 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // Add debug logging
-    // console.log("Login attempt for email:", email);
-    // console.log("Found user:", user.email);
-    // console.log("Stored password hash:", user.password);
-
     // compare password using the schema method
     const isMatch = await user.matchPassword(password);
     console.log("Password match result:", isMatch);
@@ -121,7 +116,6 @@ router.post("/login", async (req, res) => {
         token,
       },
     });
-    // console.log(user, token);
   } catch (error) {
     res.status(500).json({ message: "Error logging in", error: error.message });
   }
