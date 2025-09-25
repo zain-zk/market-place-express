@@ -65,6 +65,19 @@ router.get("/", async (req, res) => {
   }
 });
 
+// get one requirement by id
+router.get("/:id", async (req, res) => {
+  try {
+    const requirement = await Requirement.findById(req.params.id);
+    if (!requirement) {
+      return res.status(404).json({ message: "Requirement not found" });
+    }
+    res.json(requirement);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // update requirement by ID
 router.put("/:id", async (req, res) => {
   try {
