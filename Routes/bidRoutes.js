@@ -1,15 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const Bid = require("../models/bidModel");
+const Requirement = require("../models/Requirement");
 
+// POST Bid
 router.post("/", async (req, res) => {
   try {
-    // console.log("📩 Incoming Bid Request:", req.body);
     const { requirementId, amount, proposal, deliveryTime, provider } =
       req.body;
 
     const newBid = new Bid({
-      provider, // logged-in service provider
+      provider,
       requirement: requirementId,
       amount,
       proposal,
@@ -17,6 +18,10 @@ router.post("/", async (req, res) => {
     });
 
     await newBid.save();
+
+    // 🔹 update requirement status to Active automatically
+    await Requirement.findByIdAndUpdate(requirementId, { status: "Active" });
+
     res.status(201).json(newBid);
   } catch (error) {
     res
@@ -37,10 +42,10 @@ router.get("/my-bids", async (req, res) => {
     const bids = await Bid.find({ provider: providerId })
       .populate({
         path: "requirement",
-        select: "title location price client", // include location + client
+        select: "title location price client status category", // include status also
         populate: {
           path: "client",
-          select: "name email", // get client name + email
+          select: "name email",
         },
       })
       .sort({ createdAt: -1 });
@@ -54,14 +59,14 @@ router.get("/my-bids", async (req, res) => {
   }
 });
 
-// Correct: match on "requirement", not "requirementId"
+// GET all bids for one requirement
 router.get("/requirements/:id/bids", async (req, res) => {
   try {
     const bids = await Bid.find({ requirement: req.params.id })
-      .populate("provider", "name email") // show provider details
+      .populate("provider", "name email")
       .populate({
         path: "requirement",
-        select: "title location price", // include requirement info
+        select: "title location price status category",
       })
       .sort({ createdAt: -1 });
 
@@ -71,6 +76,32 @@ router.get("/requirements/:id/bids", async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching bids", error: error.message });
+  }
+});
+
+// ✅ NEW: Get a single bid by ID
+router.get("/:bidId", async (req, res) => {
+  try {
+    const { bidId } = req.params;
+
+    const bid = await Bid.findById(bidId)
+      .populate({
+        path: "requirement",
+        select: "title description location price client status category",
+        populate: {
+          path: "client",
+          select: "name email",
+        },
+      })
+      .populate("provider", "name email");
+
+    if (!bid) {
+      return res.status(404).json({ message: "Bid not found" });
+    }
+
+    res.json(bid);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 
@@ -92,7 +123,7 @@ router.put("/:bidId/status", async (req, res) => {
 // DELETE a bid by ID
 router.delete("/:id", async (req, res) => {
   try {
-    const { id } = req.params; // ✅ use "id" because route is "/:id"
+    const { id } = req.params;
     const bid = await Bid.findByIdAndDelete(id);
 
     if (!bid) {
