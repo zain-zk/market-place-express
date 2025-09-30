@@ -81,20 +81,28 @@ router.get("/:id", async (req, res) => {
 });
 
 // update requirement by ID
+// update requirement by ID (only if not Completed)
 router.put("/:id", async (req, res) => {
   try {
+    // Find the requirement first
+    const requirement = await Requirement.findById(req.params.id);
+    if (!requirement) {
+      return res.status(404).json({ message: "Requirement not found" });
+    }
+
+    // Block updates if already completed
+    if (requirement.status === "Completed") {
+      return res.status(403).json({
+        message: "This requirement is completed and cannot be edited.",
+      });
+    }
+
+    // Otherwise allow update
     const updatedRequirement = await Requirement.findByIdAndUpdate(
       req.params.id,
       req.body,
-      {
-        new: true, // return the updated doc
-        runValidators: true, // also run schema validators on update
-      }
+      { new: true, runValidators: true }
     );
-
-    if (!updatedRequirement) {
-      return res.status(404).json({ message: "Requirement not found" });
-    }
 
     res.json(updatedRequirement);
   } catch (error) {
