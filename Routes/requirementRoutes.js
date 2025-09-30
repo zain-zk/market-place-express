@@ -8,9 +8,9 @@ const Bid = require("../models/bidModel");
 router.post("/", async (req, res) => {
   try {
     console.log("📝 Received request body:", req.body);
-    const { title, description, price, location, client } = req.body;
+    const { title, description, price, location, client, category } = req.body;
 
-    if (!title || !description || !price || !location || !client) {
+    if (!title || !description || !price || !location || !client || !category) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -25,6 +25,8 @@ router.post("/", async (req, res) => {
       price: newPrice,
       location,
       client, // ✅ store client here
+      category: category ? String(category).trim() : undefined,
+      status: "Pending",
     });
 
     await newRequirement.save();
@@ -45,7 +47,7 @@ router.get("/my/:clientId", async (req, res) => {
   try {
     const requirements = await Requirement.find({
       client: req.params.clientId,
-    });
+    }).sort({ cretedAt: -1 });
     res.json(requirements);
   } catch (error) {
     res.status(500).json({ message: "Error Getting requirement", error });
@@ -65,26 +67,76 @@ router.get("/", async (req, res) => {
   }
 });
 
+// get one requirement by id
+router.get("/:id", async (req, res) => {
+  try {
+    const requirement = await Requirement.findById(req.params.id);
+    if (!requirement) {
+      return res.status(404).json({ message: "Requirement not found" });
+    }
+    res.json(requirement);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // update requirement by ID
+// update requirement by ID (only if not Completed)
 router.put("/:id", async (req, res) => {
   try {
+    // Find the requirement first
+    const requirement = await Requirement.findById(req.params.id);
+    if (!requirement) {
+      return res.status(404).json({ message: "Requirement not found" });
+    }
+
+    // Block updates if already completed
+    if (requirement.status === "Completed") {
+      return res.status(403).json({
+        message: "This requirement is completed and cannot be edited.",
+      });
+    }
+
+    // Otherwise allow update
     const updatedRequirement = await Requirement.findByIdAndUpdate(
       req.params.id,
       req.body,
-      {
-        new: true, // return the updated doc
-        runValidators: true, // also run schema validators on update
-      }
+      { new: true, runValidators: true }
     );
-
-    if (!updatedRequirement) {
-      return res.status(404).json({ message: "Requirement not found" });
-    }
 
     res.json(updatedRequirement);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error updating requirement", error });
+  }
+});
+
+// Requirement Status
+// Requirement Status Update
+router.put("/:reqId/status", async (req, res) => {
+  try {
+    const { reqId } = req.params; // ✅ correct param
+    const { status } = req.body;
+
+    // ✅ make sure status matches enum exactly
+    if (!["Pending", "Active", "Completed"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+
+    const updated = await Requirement.findByIdAndUpdate(
+      reqId,
+      { status },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Requirement not found" });
+    }
+
+    res.json(updated);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
   }
 });
 

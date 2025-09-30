@@ -85,9 +85,11 @@ router.post("/login", async (req, res) => {
     const { name, email, password } = req.body;
 
     // find user by email only
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email, name });
     if (!user) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return res
+        .status(400)
+        .json({ message: "Invalid name , email or password" });
     }
 
     // compare password using the schema method
@@ -95,7 +97,9 @@ router.post("/login", async (req, res) => {
     console.log("Password match result:", isMatch);
 
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return res
+        .status(400)
+        .json({ message: "Invalid email name or password" });
     }
 
     // Verify username matches if provided
